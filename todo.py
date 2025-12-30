@@ -23,4 +23,15 @@ async def get_todos() -> dict:
            return {"todos": todo_list}
     except Exception as e:
        return f"{e}"
+    
+# Create a GET method to retrieve a specific todo item by its id
+@todo_router.get("/todo/{todo_id}")
+async def get_todo_by_id(todo_id: int) -> dict:
+    try:
+        for todo in todo_list:
+            if todo.id == todo_id:
+                return {"todo": todo}
+            return {"Message": "Todo item not found."}
+    except Exception as e:
+        return f"{e}"
 
