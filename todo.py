@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Path, HTTPException
-from models import Todo, TodoResponse, TodoResponseList
+from models import Todo, TodoResponse, TodoResponseList, TodoItem
 todo_router = APIRouter()
 
 # Create Temporary in-app database alongside two routes for the additional and retrieval of todo items.
@@ -8,6 +8,12 @@ todo_list = []
 # Create a POST method to add a todo item in the todo_list
 @todo_router.post("/todo")
 async def add_todo(todo: Todo) -> dict:
+    for existing_todo in todo_list:
+        if existing_todo.id == todo.id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Todo item with id {todo.id} already exists."
+            )
     todo_list.append(todo)
     return {"Message": "Todo item has been added successfully."}
 
@@ -18,7 +24,7 @@ async def add_todo(todo: Todo) -> dict:
 async def get_todos():
     if len(todo_list) == 0:
         raise HTTPException(
-            status_code=200,
+            status_code=404,
             detail="Todo list is empty. Please add a item to see the todo lists"
         )
     else:
@@ -42,3 +48,40 @@ async def get_todo_by_id(todo_id: int = Path(..., description="The ID of the tod
        status_code=404,
        detail="Todo item not found"
        )
+
+
+"""
+Create a PUT method to update a specific todo item by its id.
+"""
+
+@todo_router.put("/todo/{todo_id}", response_model=TodoResponse)
+async def update_todo_by_id(
+    todo_data: TodoItem, todo_id: int = Path(..., description="The ID of the todo item to update", gt=0, example=1)
+    ):
+    for index, todo in enumerate(todo_list):
+        if todo.id == todo_id:
+            todo_list[index].title = todo_data.title
+            todo_list[index].description = todo_data.description
+            todo_list[index].completed = todo_data.completed 
+            return {"todo": todo_list[index]}
+        
+    # If the item didnt found then raise HTTPException error
+    raise HTTPException(
+        status_code=404,
+        detail="Todo item not found"
+    )
+
+"""
+Create a DELETE method to delete a specific todo item by its id.
+"""
+
+@todo_router.delete("/todo/{todo_id}")
+async def delete_todo_by_id(todo_id: int = Path(..., description="The ID of the todo item to delete", gt=0, example=1)):
+    for index, todo in enumerate(todo_list):
+        if todo.id == todo_id:
+            todo_list.pop(index)
+            return {"Message": "Todo item has been deleted successfully."}
+    raise HTTPException(
+        status_code=404,
+        detail="Todo item not found"
+    )
