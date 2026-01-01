@@ -41,7 +41,7 @@ In Path(...), ... means that this parameter is required.
 async def get_todo_by_id(todo_id: int = Path(..., description="The ID of the todo item to retrieve", gt=0, example=1)):
     for todo in todo_list:
         if todo.id == todo_id:
-            return {"todo": todo}
+            return todo
        
     # If the item didnt found then raise HTTPException error
     raise HTTPException(
@@ -63,7 +63,7 @@ async def update_todo_by_id(
             todo_list[index].title = todo_data.title
             todo_list[index].description = todo_data.description
             todo_list[index].completed = todo_data.completed 
-            return {"todo": todo_list[index]}
+            return todo_list[index]
         
     # If the item didnt found then raise HTTPException error
     raise HTTPException(
