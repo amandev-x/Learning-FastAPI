@@ -70,3 +70,18 @@ async def update_todo_by_id(
         status_code=404,
         detail="Todo item not found"
     )
+
+"""
+Create a DELETE method to delete a specific todo item by its id.
+"""
+
+@todo_router.delete("/todo/{todo_id}")
+async def delete_todo_by_id(todo_id: int = Path(..., description="The ID of the todo item to delete", gt=0, example=1)):
+    for index, todo in enumerate(todo_list):
+        if todo.id == todo_id:
+            todo_list.pop(index)
+            return {"Message": "Todo item has been deleted successfully."}
+    raise HTTPException(
+        status_code=404,
+        detail="Todo item not found"
+    )
